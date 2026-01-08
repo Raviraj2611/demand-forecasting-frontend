@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Activity, ArrowLeft, TrendingUp, Package, Calendar, AlertCircle } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import axios from 'axios';
 
 const medicines: Record<string, { name: string; category: string }> = {
   '00': { name: 'Amoxicillin 500mg', category: 'Antibiotic' },
@@ -11,34 +12,10 @@ const medicines: Record<string, { name: string; category: string }> = {
   '04': { name: 'Surgical Masks Box', category: 'PPE' },
 };
 
-
 const durations: Record<string, { label: string; months: number }> = {
   '3months': { label: '3 Months', months: 3 },
   '6months': { label: '6 Months', months: 6 },
   '1year': { label: '1 Year', months: 12 },
-};
-
-const generatePredictionData = (months: number) => {
-  const data = [];
-  const baseValue = Math.floor(Math.random() * 5000) + 3000;
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const currentMonth = new Date().getMonth();
-
-  for (let i = 0; i < months; i++) {
-    const monthIndex = (currentMonth + i) % 12;
-    const seasonalFactor = 1 + Math.sin((monthIndex / 12) * Math.PI * 2) * 0.2;
-    const randomVariation = (Math.random() - 0.5) * 0.15;
-    const trend = 1 + (i / months) * 0.1;
-    
-    data.push({
-      month: monthNames[monthIndex],
-      demand: Math.floor(baseValue * seasonalFactor * trend * (1 + randomVariation)),
-      lowerBound: Math.floor(baseValue * seasonalFactor * trend * 0.85),
-      upperBound: Math.floor(baseValue * seasonalFactor * trend * 1.15),
-    });
-  }
-
-  return data;
 };
 
 const Results = () => {
@@ -48,8 +25,65 @@ const Results = () => {
   const medicineId = searchParams.get('medicine') || '';
   const durationId = searchParams.get('duration') || '';
 
+  const [predictionData, setPredictionData] = useState<number | null>(null);  // Adjusted to store a number
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
   const medicine = medicines[medicineId];
   const duration = durations[durationId];
+
+  useEffect(() => {
+    if (!medicine || !duration) {
+      return;
+    }
+
+
+    // In Results.tsx file, modify the useEffect to use the real API
+
+// const fetchForecastData = async () => {
+//   try {
+//     setLoading(true);
+//     setError(null);
+
+//     // Replace this with the real API endpoint once the backend is ready
+//     const response = await axios.post('http://localhost:8000/predict', {
+//       medicine: medicine.name,
+//       duration: duration.months,
+//     });
+
+//     setPredictionData(response.data.output1);  // Set the forecast data
+//   } catch (err) {
+//     setError('Failed to fetch forecast data.');
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+    // Fetch forecast data from backend API (using dummy data for testing)
+    const fetchForecastData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Dummy API data for testing
+        // Simulating backend response with a hardcoded value
+        const response = {
+          data: {
+            output1: 10000, // Simulate a total demand of 10,000 units
+          }
+        };
+
+        setPredictionData(response.data.output1);  // Set the dummy output1 value
+      } catch (err) {
+        setError('Failed to fetch forecast data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchForecastData();
+  }, [medicineId, durationId]);
 
   if (!medicine || !duration) {
     return (
@@ -67,11 +101,35 @@ const Results = () => {
     );
   }
 
-  const predictionData = generatePredictionData(duration.months);
-  const totalDemand = predictionData.reduce((sum, d) => sum + d.demand, 0);
-  const avgDemand = Math.floor(totalDemand / predictionData.length);
-  const peakDemand = Math.max(...predictionData.map(d => d.demand));
-  const peakMonth = predictionData.find(d => d.demand === peakDemand)?.month || '';
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-2xl font-bold text-foreground mb-2">Loading forecast data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-foreground mb-2">Error</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Button onClick={() => navigate('/dashboard')} className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Use dummy data for testing
+  const totalDemand = predictionData || 10000;  // Use dummy data of 10,000 units if no data is available
+  const avgDemand = totalDemand / duration.months; // Calculate the average based on months
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,7 +175,7 @@ const Results = () => {
           </p>
         </div>
 
-        {/* Stas Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-15">
           <div className="bg-card rounded-2xl p-6 border border-border shadow-soft animate-slide-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center gap-3 mb-3">
@@ -140,17 +198,6 @@ const Results = () => {
             <p className="text-3xl font-bold text-foreground">{avgDemand.toLocaleString()}</p>
             <p className="text-xs text-muted-foreground mt-1">units/month</p>
           </div>
-{/* 
-          <div className="bg-card rounded-2xl p-6 border border-border shadow-soft animate-slide-up" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-destructive" />
-              </div>
-              <span className="text-sm text-muted-foreground">Peak Demand</span>
-            </div>
-            <p className="text-3xl font-bold text-foreground">{peakDemand.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">units in {peakMonth}</p>
-          </div> */}
 
           <div className="bg-card rounded-2xl p-6 border border-border shadow-soft animate-slide-up" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center gap-3 mb-3">
@@ -163,92 +210,6 @@ const Results = () => {
             <p className="text-xs text-muted-foreground mt-1">months</p>
           </div>
         </div>
-
-        {/* Chart Section
-        <div className="bg-card rounded-3xl p-6 md:p-8 border border-border shadow-medium mb-8 animate-slide-up" style={{ animationDelay: '0.5s' }}>
-          <h3 className="text-xl font-display font-bold text-foreground mb-6">Demand Trend</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={predictionData}>
-                <defs>
-                  <linearGradient id="demandGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(173, 58%, 39%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(173, 58%, 39%)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(210, 20%, 90%)" />
-                <XAxis dataKey="month" stroke="hsl(215, 15%, 50%)" fontSize={12} />
-                <YAxis stroke="hsl(215, 15%, 50%)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(0, 0%, 100%)',
-                    border: '1px solid hsl(210, 20%, 90%)',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)',
-                  }}
-                  labelStyle={{ fontWeight: 'bold', color: 'hsl(215, 25%, 15%)' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="demand"
-                  stroke="hsl(173, 58%, 39%)"
-                  strokeWidth={3}
-                  fill="url(#demandGradient)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Confidence Interval Chart */}
-        {/* <div className="bg-card rounded-3xl p-6 md:p-8 border border-border shadow-medium animate-slide-up" style={{ animationDelay: '0.6s' }}>
-          <h3 className="text-xl font-display font-bold text-foreground mb-2">Prediction with Confidence Bands</h3>
-          <p className="text-sm text-muted-foreground mb-6">Showing upper and lower bounds for demand estimation</p>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={predictionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(210, 20%, 90%)" />
-                <XAxis dataKey="month" stroke="hsl(215, 15%, 50%)" fontSize={12} />
-                <YAxis stroke="hsl(215, 15%, 50%)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(0, 0%, 100%)',
-                    border: '1px solid hsl(210, 20%, 90%)',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)',
-                  }}
-                  labelStyle={{ fontWeight: 'bold', color: 'hsl(215, 25%, 15%)' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="upperBound"
-                  stroke="hsl(35, 92%, 55%)"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
-                  name="Upper Bound"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="demand"
-                  stroke="hsl(173, 58%, 39%)"
-                  strokeWidth={3}
-                  dot={{ fill: 'hsl(173, 58%, 39%)', strokeWidth: 2 }}
-                  name="Predicted Demand"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="lowerBound"
-                  stroke="hsl(215, 15%, 50%)"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
-                  name="Lower Bound"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div> */}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12 animate-slide-up" style={{ animationDelay: '0.7s' }}>
