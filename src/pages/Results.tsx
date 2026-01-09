@@ -5,17 +5,17 @@ import { Activity, ArrowLeft, TrendingUp, Package, Calendar, AlertCircle } from 
 import axios from 'axios';
 
 const medicines: Record<string, { name: string; category: string }> = {
-  '00': { name: 'Amoxicillin 500mg', category: 'Antibiotic' },
-  '01': { name: 'Atorvastatin 20mg', category: 'Cholesterol' },
-  '02': { name: 'Insulin Glargine 10ml', category: 'Diabetes' },
-  '03': { name: 'Surgical Gloves Box', category: 'PPE' },
-  '04': { name: 'Surgical Masks Box', category: 'PPE' },
+  'Amoxicillin 500mg': { name: 'Amoxicillin 500mg', category: 'Antibiotic' },
+  'Atorvastatin 20mg': { name: 'Atorvastatin 20mg', category: 'Cholesterol' },
+  'Insulin Glargine 10ml': { name: 'Insulin Glargine 10ml', category: 'Diabetes' },
+  'Surgical Gloves Box': { name: 'Surgical Gloves Box', category: 'PPE' },
+  'Surgical Masks Box': { name: 'Surgical Masks Box', category: 'PPE' },
 };
 
 const durations: Record<string, { label: string; months: number }> = {
-  '3months': { label: '3 Months', months: 3 },
-  '6months': { label: '6 Months', months: 6 },
-  '1year': { label: '1 Year', months: 12 },
+  '3': { label: '3 Months', months: 3 },
+  '6': { label: '6 Months', months: 6 },
+  '12': { label: '1 Year', months: 12 },
 };
 
 const Results = () => {
@@ -40,47 +40,48 @@ const Results = () => {
 
     // In Results.tsx file, modify the useEffect to use the real API
 
-// const fetchForecastData = async () => {
-//   try {
-//     setLoading(true);
-//     setError(null);
-
-//     // Replace this with the real API endpoint once the backend is ready
-//     const response = await axios.post('http://localhost:8000/predict', {
-//       medicine: medicine.name,
-//       duration: duration.months,
-//     });
-
-//     setPredictionData(response.data.output1);  // Set the forecast data
-//   } catch (err) {
-//     setError('Failed to fetch forecast data.');
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+const fetchForecastData = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    
+    console.log('Sending request with:', medicine.name, duration.months);
+    // Replace this with the real API endpoint once the backend is ready
+    const response = await axios.post('http://localhost:8000/predict', {
+      input1: medicine.name,
+      input2: duration.months,
+    });
+    console.log(response);
+    setPredictionData(response.data.output2);  // Set the forecast data
+  } catch (err) {
+    setError('Failed to fetch forecast data.');
+  } finally {
+    setLoading(false);
+  }
+};
 
 
     // Fetch forecast data from backend API (using dummy data for testing)
-    const fetchForecastData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    // const fetchForecastData = async () => {
+    //   try {
+    //     setLoading(true);
+    //     setError(null);
 
-        // Dummy API data for testing
-        // Simulating backend response with a hardcoded value
-        const response = {
-          data: {
-            output1: 10000, // Simulate a total demand of 10,000 units
-          }
-        };
+    //     // Dummy API data for testing
+    //     // Simulating backend response with a hardcoded value
+    //     const response = {
+    //       data: {
+    //         output1: 10000, // Simulate a total demand of 10,000 units
+    //       }
+    //     };
 
-        setPredictionData(response.data.output1);  // Set the dummy output1 value
-      } catch (err) {
-        setError('Failed to fetch forecast data.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    //     setPredictionData(response.data.output1);  // Set the dummy output1 value
+    //   } catch (err) {
+    //     setError('Failed to fetch forecast data.');
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
 
     fetchForecastData();
   }, [medicineId, durationId]);
@@ -128,7 +129,7 @@ const Results = () => {
   }
 
   // Use dummy data for testing
-  const totalDemand = predictionData || 10000;  // Use dummy data of 10,000 units if no data is available
+  const totalDemand = predictionData || 0 
   const avgDemand = totalDemand / duration.months; // Calculate the average based on months
 
   return (
@@ -218,12 +219,6 @@ const Results = () => {
             className="h-12 px-8 bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold shadow-medium"
           >
             Generate New Prediction
-          </Button>
-          <Button
-            variant="outline"
-            className="h-12 px-8 border-border hover:bg-muted font-semibold"
-          >
-            Export Report
           </Button>
         </div>
       </main>

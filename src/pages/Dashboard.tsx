@@ -13,17 +13,17 @@ import {
 import { Activity, LogOut, Pill, Calendar, ArrowRight, TrendingUp, BarChart3, Package } from 'lucide-react';
 
 const medicines = [
-  { id: '00', name: 'Amoxicillin 500mg', category: 'Antibiotic' },
-  { id: '01', name: 'Atorvastatin 20mg', category: 'Cholesterol' },
-  { id: '02', name: 'Insulin Glargine 10ml', category: 'Diabetes' },
-  { id: '03', name: 'Surgical Gloves Box', category: 'PPE' },
-  { id: '04', name: 'Surgical Masks Box', category: 'PPE' },
+  { id: 'Amoxicillin 500mg', name: 'Amoxicillin 500mg', category: 'Antibiotic' },
+  { id: 'Atorvastatin 20mg', name: 'Atorvastatin 20mg', category: 'Cholesterol' },
+  { id: 'Insulin Glargine 10ml', name: 'Insulin Glargine 10ml', category: 'Diabetes' },
+  { id: 'Surgical Gloves Box', name: 'Surgical Gloves Box', category: 'PPE' },
+  { id: 'Surgical Masks Box', name: 'Surgical Masks Box', category: 'PPE' },
 ];
 
 const durations = [
-  { id: '3months', label: '3 Months', value: 3 },
-  { id: '6months', label: '6 Months', value: 6 },
-  { id: '1year', label: '1 Year', value: 12 },
+  { id: '3', label: '3 Months', value: 3 },
+  { id: '6', label: '6 Months', value: 6 },
+  { id: '12', label: '1 Year', value: 12 },
 ];
 
 const Dashboard = () => {
@@ -102,7 +102,7 @@ const Dashboard = () => {
                 <TrendingUp className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">95%</p>
+                <p className="text-2xl font-bold text-foreground">94%</p>
                 <p className="text-sm text-muted-foreground">Prediction Accuracy</p>
               </div>
             </div>

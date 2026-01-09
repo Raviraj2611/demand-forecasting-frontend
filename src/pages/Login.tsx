@@ -71,7 +71,7 @@ const Login = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-primary-foreground">Accurate Predictions</h3>
-                <p className="text-sm text-primary-foreground/70">Up to 95% accuracy in demand forecasting</p>
+                <p className="text-sm text-primary-foreground/70">Up to 94% accuracy in demand forecasting</p>
               </div>
             </div>
             
