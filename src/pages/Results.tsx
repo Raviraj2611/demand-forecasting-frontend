@@ -6,11 +6,11 @@ import axios from 'axios';
 import { set } from 'date-fns';
 
 const medicines: Record<string, { name: string; category: string }> = {
-  'Amoxicillin 500mg': { name: 'Amoxicillin 500mg', category: 'Antibiotic' },
-  'Atorvastatin 20mg': { name: 'Atorvastatin 20mg', category: 'Cholesterol' },
-  'Insulin Glargine 10ml': { name: 'Insulin Glargine 10ml', category: 'Diabetes' },
-  'Surgical Gloves Box': { name: 'Surgical Gloves Box', category: 'PPE' },
-  'Surgical Masks Box': { name: 'Surgical Masks Box', category: 'PPE' },
+  'Amoxicillin 500mg': { name: 'Amoxicillin_500mg', category: 'Antibiotic' },
+  'Atorvastatin 20mg': { name: 'Atorvastatin_20mg', category: 'Cholesterol' },
+  'Insulin Glargine 10ml': { name: 'Insulin_Glargine', category: 'Diabetes' },
+  'Surgical Gloves Box': { name: 'Surgical_Gloves_Box', category: 'PPE' },
+  'Surgical Masks Box': { name: 'Surgical_Masks_Box', category: 'PPE' },
 };
 
 const durations: Record<string, { label: string; months: number }> = {
@@ -29,6 +29,7 @@ const Results = () => {
   const [predictionData, setPredictionData] = useState<number | null>(null);  // Adjusted to store a number
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [forecastImage, setForecastImage] = useState<string | null>(null);
 
   const medicine = medicines[medicineId];
   const duration = durations[durationId];
@@ -48,13 +49,18 @@ const Results = () => {
 
         console.log('Sending request with:', medicine.name, duration.months);
         // Replace this with the real API endpoint once the backend is ready
-        const response = await axios.post('http://localhost:8000/predict', {
-          input1: medicine.name,
-          input2: duration.months,
+        const response = await axios.get('http://localhost:8000/predict', {
+          params: {
+            input1: medicine.name,
+            input2: duration.months,
+          }
         });
+        console.log('input1:', medicine.name, 'input2:', duration.months);
         console.log(response);
         setTotalMoneyNeeded(response.data.output1);  // Set the total money needed
         setPredictionData(response.data.output2);  // Set the forecast data
+        setForecastImage(response.data.image);
+        console.log('Forecast image data received',forecastImage);
       } catch (err) {
         setError('Failed to fetch forecast data.');
       } finally {
@@ -203,28 +209,43 @@ const Results = () => {
           </div>
 
           <div className="bg-card rounded-2xl p-6 border border-border shadow-soft animate-slide-up" style={{ animationDelay: '0.4s' }}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-secondary-foreground" /> {/* Use the DollarSign icon */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-secondary-foreground" /> {/* Use the DollarSign icon */}
+              </div>
+              <span className="text-sm text-muted-foreground">Total Money Needed</span> {/* Updated label */}
             </div>
-            <span className="text-sm text-muted-foreground">Total Money Needed</span> {/* Updated label */}
+            <p className="text-3xl font-bold text-foreground">{totalMoneyNeeded.toLocaleString()}</p> {/* Use your total money needed variable */}
+            <p className="text-xs text-muted-foreground mt-1">currency</p> {/* You can specify the currency if needed */}
           </div>
-          <p className="text-3xl font-bold text-foreground">{totalMoneyNeeded.toLocaleString()}</p> {/* Use your total money needed variable */}
-          <p className="text-xs text-muted-foreground mt-1">currency</p> {/* You can specify the currency if needed */}
         </div>
-    </div>
 
-        
+        {forecastImage && (
+          <div className="mt-12 flex justify-center">
+            <div className="bg-card p-6 rounded-2xl border border-border shadow-soft">
+              <h3 className="text-lg font-semibold text-center mb-4">
+                Forecast Visualization
+              </h3>
+              <img
+                src={forecastImage}
+                alt="Forecast Chart"
+                className="max-w-full h-auto rounded-xl"
+              />
+            </div>
+          </div>
+        )}
 
-        {/* Action Buttons */ }
-  <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12 animate-slide-up" style={{ animationDelay: '0.7s' }}>
-    <Button
-      onClick={() => navigate('/dashboard')}
-      className="h-12 px-8 bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold shadow-medium"
-    >
-      Generate New Prediction
-    </Button>
-  </div>
+
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12 animate-slide-up" style={{ animationDelay: '0.7s' }}>
+          <Button
+            onClick={() => navigate('/dashboard')}
+            className="h-12 px-8 bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold shadow-medium"
+          >
+            Generate New Prediction
+          </Button>
+        </div>
       </main >
     </div >
   );
